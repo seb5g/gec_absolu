@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<EntryList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" createTime="2026-11-11T16:44:43" creator="csv_to_iof.py">
+<EntryList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" createTime="2026-11-11T20:49:06" creator="csv_to_iof.py">
   <Event>
     <Name>Absolu O MD 2026</Name>
   </Event>

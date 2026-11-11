@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parent))
-import csv_to_iof as c  # noqa: E402
+import csv_to_iof_meos as c  # noqa: E402
 
 SAMPLE = HERE / "sample_helloasso.csv"
 NS = {"i": c.IOF_NS}
@@ -15,6 +15,8 @@ NS = {"i": c.IOF_NS}
 def convert(**kw):
     headers, rows = c.read_rows(SAMPLE)
     cols = c.map_columns(headers)
+    kw.setdefault("season_year", 2026)
+    kw.setdefault("mode", "categorie")
     return c.build_tree(rows, cols, "Test O", **kw)
 
 
@@ -33,7 +35,8 @@ class ConvertTests(unittest.TestCase):
         self.assertEqual(p.get("sex"), "F")
         self.assertEqual(p.findtext("i:Name/i:Family", namespaces=NS), "DUPONT")
         self.assertEqual(p.findtext("i:BirthDate", namespaces=NS), "2015-03-30")
-        self.assertEqual(e.findtext("i:Class/i:Name", namespaces=NS), "Bleu")
+        self.assertEqual(e.findtext("i:Class/i:Name", namespaces=NS), "D12")  # née en 2015, 11 ans au 31/12/2026
+        self.assertEqual(e.findtext("i:Class/i:RaceClass/i:Course/i:Name", namespaces=NS), "Bleu")
         self.assertEqual(e.findtext("i:Organisation/i:Name", namespaces=NS), "ABSOLU RAID")
         self.assertIsNone(e.find("i:ControlCard", NS))
 
@@ -52,16 +55,55 @@ class ConvertTests(unittest.TestCase):
         self.assertIsNone(e.find("i:Organisation", NS))  # club vide : pas d'Organisation
         self.assertEqual(report.missing_card, ["Léa DUPONT"])
 
-    def test_class_map(self):
+    def test_circuit_map_renames_course_only(self):
         tree, _ = convert(class_map={"Bleu": "Circuit Bleu"})
-        e = tree.getroot().findall("i:PersonEntry", NS)[0]
-        self.assertEqual(e.findtext("i:Class/i:Name", namespaces=NS), "Circuit Bleu")
-
-    def test_course_is_written_like_ffco_export(self):
-        tree, _ = convert(class_map={"Bleu": "Catégorie Bleu"})
         cls = tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS)
-        self.assertEqual(cls.findtext("i:Name", namespaces=NS), "Catégorie Bleu")
+        self.assertEqual(cls.findtext("i:Name", namespaces=NS), "D12")
+        self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Name", namespaces=NS), "Circuit Bleu")
+
+    def test_mode_couleur_uses_circuit_as_class(self):
+        tree, report = convert(mode="couleur", class_ids=c.builtin_class_ids())
+        cls = tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS)
+        self.assertEqual(cls.findtext("i:Name", namespaces=NS), "Bleu")
+        self.assertEqual(cls.findtext("i:Id", namespaces=NS), "200")
         self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Name", namespaces=NS), "Bleu")
+        self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Id", namespaces=NS), "41727")
+        self.assertEqual(report.missing_class_ids, {"Violet"})  # « Violet » seul n'existe pas
+
+    def test_mode_couleur_needs_no_birth_or_sex(self):
+        headers, rows = c.read_rows(SAMPLE)
+        rows[0]["Femme/Homme"] = ""
+        rows[0]["Date  de Naissance"] = ""
+        tree, _ = c.build_tree(rows, c.map_columns(headers), "T", mode="couleur")
+        self.assertEqual(tree.getroot().findall("i:PersonEntry", NS)[0].findtext("i:Class/i:Name", namespaces=NS), "Bleu")
+
+    def test_category_in_name(self):
+        tree, _ = convert(mode="couleur", category_in_name=True)
+        es = tree.getroot().findall("i:PersonEntry", NS)
+        self.assertEqual(es[0].findtext("i:Person/i:Name/i:Given", namespaces=NS), "Léa (D12)")
+        self.assertEqual(es[0].findtext("i:Class/i:Name", namespaces=NS), "Bleu")  # classement par circuit inchangé
+        tree, _ = convert(mode="couleur")
+        self.assertEqual(tree.getroot().findall("i:PersonEntry", NS)[0].findtext("i:Person/i:Name/i:Given", namespaces=NS), "Léa")
+
+    def test_category_for_age_and_sex(self):
+        from datetime import date
+        f = lambda y, s, year=2026: c.category_for(date(y, 6, 1), s, year)
+        self.assertEqual(f(2016, "F"), "D10")   # 10 ans
+        self.assertEqual(f(2015, "M"), "H12")   # 11 ans
+        self.assertEqual(f(2005, "F"), "D21")   # 21 ans
+        self.assertEqual(f(1992, "M"), "H21")   # 34 ans
+        self.assertEqual(f(1991, "M"), "H35")   # 35 ans
+        self.assertEqual(f(1986, "F"), "D40")   # 40 ans
+        self.assertEqual(f(1947, "M"), "H75")   # 79 ans
+        self.assertEqual(f(1946, "M"), "H80")   # 80 ans
+        self.assertEqual(f(1990, "M", 2027), "H35")  # l'année de l'événement compte
+
+    def test_missing_birth_or_sex_gives_no_class(self):
+        headers, rows = c.read_rows(SAMPLE)
+        rows[0]["Femme/Homme"] = ""
+        tree, report = c.build_tree(rows, c.map_columns(headers), "T", season_year=2026, mode="categorie")
+        self.assertIsNone(tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS))
+        self.assertTrue(any("non calculable" in m for _, m in report.warnings))
 
     def test_clubs_list_adds_ids(self):
         with tempfile.TemporaryDirectory() as d:
@@ -87,7 +129,7 @@ class ConvertTests(unittest.TestCase):
     def test_class_ids_from_ffco_export(self):
         ffco = (f'<EntryList xmlns="{c.IOF_NS}" iofVersion="3.0"><Event><Name>E</Name></Event><PersonEntry>'
                 '<Person><Name><Family>A</Family><Given>B</Given></Name></Person>'
-                '<Class><Id>200</Id><Name>Bleu</Name><RaceClass><Course><Id>41727</Id><Name>Bleu</Name>'
+                '<Class><Id>312</Id><Name>D12</Name><RaceClass><Course><Id>41727</Id><Name>Bleu</Name>'
                 '</Course></RaceClass></Class></PersonEntry></EntryList>')
         with tempfile.TemporaryDirectory() as d:
             f = Path(d) / "ffco.xml"
@@ -95,23 +137,21 @@ class ConvertTests(unittest.TestCase):
             ids = c.load_class_ids(f)
         tree, report = convert(class_ids=ids)
         cls = tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS)
-        self.assertEqual(cls.findtext("i:Id", namespaces=NS), "200")
+        self.assertEqual(cls.findtext("i:Id", namespaces=NS), "312")
         self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Id", namespaces=NS), "41727")
-        # « Violet » absent de l'export FFCO : sans identifiant, avec avertissement
+        # « H45 » absente de l'export FFCO : sans identifiant, signalée une fois dans le rapport
         cls2 = tree.getroot().findall("i:PersonEntry", NS)[1].find("i:Class", NS)
         self.assertIsNone(cls2.find("i:Id", NS))
-        self.assertTrue(any("absente" in m for _, m in report.warnings))
+        self.assertEqual(report.missing_class_ids, {"H45"})
 
     def test_class_ids_from_ffco_category_csv(self):
         classes, courses = c.load_class_ids(HERE / "categories_ffco.csv")
-        self.assertEqual(classes[c._norm("Violet Court")]["id"], "203")
+        self.assertEqual(classes[c._norm("D12")]["id"], "312")
         self.assertEqual(courses, {})
         tree, report = convert(class_ids=(classes, courses))
-        cls = tree.getroot().findall("i:PersonEntry", NS)[1].find("i:Class", NS)
-        self.assertEqual(cls.findtext("i:Name", namespaces=NS), "Violet")  # « Violet » seul n'existe pas
-        self.assertIsNone(cls.find("i:Id", NS))
         cls0 = tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS)
-        self.assertEqual(cls0.findtext("i:Id", namespaces=NS), "200")
+        self.assertEqual(cls0.findtext("i:Id", namespaces=NS), "312")
+        self.assertEqual(report.missing_class_ids, set())
 
     def test_official_club_list_bundled(self):
         clubs = c.builtin_clubs()
@@ -128,7 +168,7 @@ class ConvertTests(unittest.TestCase):
         classes, courses = c.builtin_class_ids()
         tree, _ = convert(class_ids=(classes, courses), clubs=c.builtin_clubs())
         e = tree.getroot().findall("i:PersonEntry", NS)[0]
-        self.assertEqual(e.findtext("i:Class/i:Id", namespaces=NS), "200")
+        self.assertIsNone(e.find("i:Class/i:Id", NS))  # catégories : identifiants via --class-ids
         self.assertEqual(e.findtext("i:Class/i:RaceClass/i:Course/i:Id", namespaces=NS), "41727")
         self.assertEqual(e.findtext("i:Organisation/i:Id", namespaces=NS), "3108")
 
@@ -157,7 +197,7 @@ class SchemaTests(unittest.TestCase):
             import lxml  # noqa: F401
         except ImportError:
             self.skipTest("lxml non installé")
-        ids = ({c._norm("Bleu"): {"id": "200", "name": "Bleu"}}, {c._norm("Bleu"): {"id": "41727", "name": "Bleu"}})
+        ids = ({c._norm("D12"): {"id": "312", "name": "D12"}}, {c._norm("Bleu"): {"id": "41727", "name": "Bleu"}})
         tree, _ = convert(class_ids=ids)
         with tempfile.TemporaryDirectory() as d:
             out = Path(d) / "out.xml"

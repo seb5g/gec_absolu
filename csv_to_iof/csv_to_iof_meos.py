@@ -2,7 +2,7 @@
 """Convertit un export CSV HelloAsso en IOF XML 3.0 (EntryList) pour MeOS.
 
 Usage :
-    python csv_to_iof.py export.csv --event-name "Mon événement" -o inscriptions.xml
+    python csv_to_iof_meos.py export.csv --event-name "Mon événement" -o inscriptions.xml
 
 Seule la bibliothèque standard est nécessaire. La validation contre le schéma
 officiel (IOF.xsd, fourni à côté du script) utilise lxml s'il est installé.
@@ -30,9 +30,15 @@ NO_CLUB_VALUES = {"sans club", "sans", "aucun", "aucun club", "non licencie"}  #
 VALID_STATUSES = {"valide", "validee"}
 
 # Correspondances FFCO intégrées (relevées dans les exports FFCO de l'événement 107534).
-# Catégories : identifiants FFCO (fichier « Nr catg. »). Circuits : identifiants propres à cet
+# Circuits : identifiants propres à cet
 # événement, probablement différents pour un autre ; --class-ids les remplace.
+# Classes FFCO « couleur » (mode couleur) : identifiants de l'événement 107534.
 BUILTIN_CLASSES = {"Bleu": "200", "Jaune": "201", "Vert": "202", "Violet Court": "203", "Violet Long": "204"}
+MODES = ("couleur", "categorie")
+# Catégories FFCO d'âge : (âge maximum, libellé). Âge = année de l'événement - année de naissance
+# (âge au 31 décembre) ; au-delà de 79 ans : 80.
+AGE_CLASSES = [(10, "10"), (12, "12"), (14, "14"), (16, "16"), (18, "18"), (20, "20"), (34, "21"), (39, "35"),
+               (44, "40"), (49, "45"), (54, "50"), (59, "55"), (64, "60"), (69, "65"), (74, "70"), (79, "75")]
 BUILTIN_COURSES = {"Violet Long": "41724", "Violet Court": "41725", "Jaune": "41726", "Bleu": "41727", "Vert": "41728"}
 CLUBS_FILE = Path(__file__).with_name("ffco_clubs.xml")  # liste officielle des clubs FFCO (IOF OrganisationList)
 # Noms sous lesquels les exports FFCO d'inscriptions écrivent certains clubs (≠ liste officielle) -> id club.
@@ -62,6 +68,7 @@ class Report:
     skipped: list = field(default_factory=list)  # (n° ligne, raison)
     warnings: list = field(default_factory=list)  # (n° ligne, message)
     missing_card: list = field(default_factory=list)  # noms
+    missing_class_ids: set = field(default_factory=set)  # catégories sans identifiant
 
     def render(self) -> str:
         lines = [f"{self.converted} inscrit(s) converti(s)."]
@@ -73,9 +80,12 @@ class Report:
                 f"{len(self.missing_card)} coureur(s) sans n° de puce (à saisir dans MeOS) :"
             )
             lines += [f"  - {name}" for name in self.missing_card]
+        if self.missing_class_ids:
+            lines.append("Catégories sans identifiant FFCO (MeOS en créera de nouvelles ; utilise --class-ids) : "
+                         + ", ".join(sorted(self.missing_class_ids)))
         if self.warnings:
             lines.append("Avertissements :")
-            lines += [f"  - ligne {n} : {msg}" for n, msg in self.warnings]
+            lines += [f"  - ligne {n} : {msg}" if n else f"  - {msg}" for n, msg in self.warnings]
         return "\n".join(lines)
 
 
@@ -161,6 +171,13 @@ def parse_sex(value: str) -> Optional[str]:
     return None
 
 
+def category_for(birth: date, sex: str, year: int) -> str:
+    """Catégorie FFCO d'âge et de sexe (D14, H21...), âge au 31 décembre de `year`."""
+    age = year - birth.year
+    label = next((lab for limit, lab in AGE_CLASSES if age <= limit), "80")
+    return ("D" if sex == "F" else "H") + label
+
+
 def parse_card(value: str) -> str:
     return re.sub(r"\D", "", value or "")
 
@@ -241,6 +258,7 @@ def _load_oe_categories(path: Path) -> dict[str, dict]:
 
 
 def builtin_class_ids() -> tuple[dict[str, dict], dict[str, dict]]:
+    """(classes « couleur », circuits). Les identifiants des catégories d'âge viennent de --class-ids."""
     return (
         {_norm(n): {"id": i, "name": n} for n, i in BUILTIN_CLASSES.items()},
         {_norm(n): {"id": i, "name": n} for n, i in BUILTIN_COURSES.items()},
@@ -273,15 +291,17 @@ def match_club(name: str, clubs: dict[str, dict]) -> tuple[Optional[dict], bool]
 
 
 def build_tree(rows, cols, event_name, event_id=None, nationality="FRA",
-               class_map=None, known_classes=None, clubs=None, class_ids=None, now=None) -> tuple[ET.ElementTree, Report]:
+               class_map=None, known_classes=None, clubs=None, class_ids=None, season_year=None, mode="couleur",
+               category_in_name=False, now=None) -> tuple[ET.ElementTree, Report]:
     class_map = class_map or {}
+    season_year = season_year or date.today().year
     report = Report()
     ET.register_namespace("", IOF_NS)
     ET.register_namespace("xsi", XSI_NS)
     root = ET.Element(_q("EntryList"), {
         "iofVersion": "3.0",
         "createTime": (now or datetime.now()).replace(microsecond=0).isoformat(),
-        "creator": "csv_to_iof.py",
+        "creator": "csv_to_iof_meos.py",
     })
     event = ET.SubElement(root, _q("Event"))
     if event_id:
@@ -314,11 +334,18 @@ def build_tree(rows, cols, event_name, event_id=None, nationality="FRA",
         licence = get(row, "licence")
         if licence:
             ET.SubElement(person, _q("Id"), {"type": "FFCO"}).text = licence
-        name = ET.SubElement(person, _q("Name"))
-        ET.SubElement(name, _q("Family")).text = family
-        ET.SubElement(name, _q("Given")).text = given
         birth_raw = get(row, "birth")
         birth = parse_birth(birth_raw) if birth_raw else None
+        name = ET.SubElement(person, _q("Name"))
+        ET.SubElement(name, _q("Family")).text = family
+        given_xml = given
+        if category_in_name:
+            # La catégorie d'âge apparaît dans les listes MeOS à la suite du prénom : « Aurore (D40) ».
+            if birth and sex:
+                given_xml = f"{given} ({category_for(birth, sex, season_year)})"
+            else:
+                report.warnings.append((lineno, f"{label} : catégorie d'âge non calculable, nom sans catégorie"))
+        ET.SubElement(name, _q("Given")).text = given_xml
         if birth:
             ET.SubElement(person, _q("BirthDate")).text = birth.isoformat()
         elif birth_raw:
@@ -360,31 +387,42 @@ def build_tree(rows, cols, event_name, event_id=None, nationality="FRA",
             report.missing_card.append(label)
 
         circuit = get(row, "circuit")
+        course = known = None
         if circuit:
+            course, known = class_name(circuit, class_map, known_classes)
+        if mode == "couleur":
+            # Classe MeOS = circuit (course « couleur ») : comme l'export FFCO d'un événement à circuits de couleur.
+            class_label = course
+            if not circuit:
+                report.warnings.append((lineno, f"{label} : aucun circuit choisi, inscrit sans classe"))
+        else:
+            # Classe MeOS = catégorie d'âge/sexe calculée ; le circuit devient le parcours.
+            class_label = None
+            if not (birth and sex):
+                report.warnings.append((lineno, f"{label} : catégorie non calculable (naissance ou sexe manquant), inscrit sans classe"))
+            else:
+                class_label = category_for(birth, sex, season_year)
+            if class_label and not circuit:
+                report.warnings.append((lineno, f"{label} : aucun circuit choisi"))
+        if class_label:
             cls = ET.SubElement(entry, _q("Class"))
-            cname, known = class_name(circuit, class_map, known_classes)
-            course, _ = class_name(circuit, {}, known_classes)
-            class_ref = course_ref = None
-            if class_ids:
-                class_ref = class_ids[0].get(_norm(cname))
-                course_ref = class_ids[1].get(_norm(course))
-                if class_ref is None:
-                    report.warnings.append((lineno, f"{label} : catégorie « {cname} » absente de --class-ids (MeOS en créera une nouvelle)"))
+            class_ref = class_ids[0].get(_norm(class_label)) if class_ids else None
             if class_ref:
                 ET.SubElement(cls, _q("Id")).text = class_ref["id"]
-                cname = class_ref["name"]
-            ET.SubElement(cls, _q("Name")).text = cname
-            # Circuit MeOS (parcours) : même structure que l'export FFCO, Class/RaceClass/Course.
-            race_class = ET.SubElement(cls, _q("RaceClass"))
-            course_el = ET.SubElement(race_class, _q("Course"))
-            if course_ref:
-                ET.SubElement(course_el, _q("Id")).text = course_ref["id"]
-                course = course_ref["name"]
-            ET.SubElement(course_el, _q("Name")).text = course
-            if not known:
-                report.warnings.append((lineno, f"{label} : circuit « {cname} » absent de la liste --classes"))
-        else:
-            report.warnings.append((lineno, f"{label} : aucun circuit, inscrit sans classe"))
+                class_label = class_ref["name"]
+            elif class_ids:
+                report.missing_class_ids.add(class_label)
+            ET.SubElement(cls, _q("Name")).text = class_label
+            if circuit:
+                course_ref = class_ids[1].get(_norm(course)) if class_ids else None
+                race_class = ET.SubElement(cls, _q("RaceClass"))
+                course_el = ET.SubElement(race_class, _q("Course"))
+                if course_ref:
+                    ET.SubElement(course_el, _q("Id")).text = course_ref["id"]
+                    course = course_ref["name"]
+                ET.SubElement(course_el, _q("Name")).text = course
+        if circuit and not known:
+            report.warnings.append((lineno, f"{label} : circuit « {course} » absent de la liste --classes"))
         report.converted += 1
 
     ET.indent(root)
@@ -411,13 +449,20 @@ def main(argv=None) -> int:
     p.add_argument("--event-id", help="identifiant de l'événement (facultatif)")
     p.add_argument("-o", "--output", type=Path, help="fichier XML (défaut : <csv>.xml)")
     p.add_argument("--nationality", default="FRA", help="code pays par défaut, vide pour l'omettre (défaut : FRA)")
-    p.add_argument("--class-map", type=Path, help="JSON {\"nom du circuit\": \"classe MeOS\"} (facultatif)")
-    p.add_argument("--classes", help="liste des circuits attendus, séparés par « ; » (ex. \"Violet Long;Jaune;Bleu\") : "
+    p.add_argument("--class-map", type=Path, help="JSON {\"nom du circuit\": \"nom du circuit dans MeOS\"} (facultatif)")
+    p.add_argument("--classes", help="liste des circuits (parcours) attendus, séparés par « ; » (ex. \"Violet Long;Jaune;Bleu\") : "
                    "normalise la casse et signale les circuits inconnus")
     p.add_argument("--clubs", type=Path, help="liste officielle des clubs (IOF XML : OrganisationList ou export FFCO) : "
                    "ajoute l'identifiant de club, que MeOS utilise pour rapprocher sa base")
     p.add_argument("--class-ids", type=Path, help="export FFCO d'inscriptions (IOF XML) ou fichier de catégories FFCO (CSV « Nr catg. ») dont on reprend les identifiants "
                    "de catégories et de circuits : MeOS crée une nouvelle catégorie si l'identifiant diffère")
+    p.add_argument("--mode", choices=MODES, default="couleur",
+                   help="couleur (défaut) : la classe MeOS est le circuit ; categorie : la classe est la catégorie "
+                        "d'âge/sexe calculée (D14, H21...) et le circuit devient le parcours")
+    p.add_argument("--category-in-name", action="store_true",
+                   help="ajoute la catégorie d'âge au prénom (« Aurore (D40) ») pour qu'elle apparaisse dans les listes MeOS")
+    p.add_argument("--year", type=int, default=date.today().year,
+                   help="année de l'événement (mode categorie) : l'âge est calculé au 31 décembre de cette année (défaut : année en cours)")
     p.add_argument("--no-builtin", action="store_true",
                    help="n'utilise pas les identifiants FFCO intégrés (catégories, circuits, clubs)")
     p.add_argument("--no-validate", action="store_true", help="ne pas valider contre IOF.xsd")
@@ -436,7 +481,7 @@ def main(argv=None) -> int:
     tree, report = build_tree(rows, cols, args.event_name, args.event_id,
                               args.nationality, class_map,
                               [c for c in (args.classes or "").split(";") if c.strip()],
-                              clubs, class_ids)
+                              clubs, class_ids, args.year, args.mode, args.category_in_name)
     out = args.output or args.csv.with_suffix(".xml")
     tree.write(out, encoding="utf-8", xml_declaration=True)
     print(report.render())
