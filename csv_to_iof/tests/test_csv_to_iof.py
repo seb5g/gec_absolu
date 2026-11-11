@@ -16,6 +16,7 @@ def convert(**kw):
     headers, rows = c.read_rows(SAMPLE)
     cols = c.map_columns(headers)
     kw.setdefault("season_year", 2026)
+    kw.setdefault("mode", "categorie")
     return c.build_tree(rows, cols, "Test O", **kw)
 
 
@@ -60,6 +61,22 @@ class ConvertTests(unittest.TestCase):
         self.assertEqual(cls.findtext("i:Name", namespaces=NS), "D12")
         self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Name", namespaces=NS), "Circuit Bleu")
 
+    def test_mode_couleur_uses_circuit_as_class(self):
+        tree, report = convert(mode="couleur", class_ids=c.builtin_class_ids())
+        cls = tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS)
+        self.assertEqual(cls.findtext("i:Name", namespaces=NS), "Bleu")
+        self.assertEqual(cls.findtext("i:Id", namespaces=NS), "200")
+        self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Name", namespaces=NS), "Bleu")
+        self.assertEqual(cls.findtext("i:RaceClass/i:Course/i:Id", namespaces=NS), "41727")
+        self.assertEqual(report.missing_class_ids, {"Violet"})  # « Violet » seul n'existe pas
+
+    def test_mode_couleur_needs_no_birth_or_sex(self):
+        headers, rows = c.read_rows(SAMPLE)
+        rows[0]["Femme/Homme"] = ""
+        rows[0]["Date  de Naissance"] = ""
+        tree, _ = c.build_tree(rows, c.map_columns(headers), "T", mode="couleur")
+        self.assertEqual(tree.getroot().findall("i:PersonEntry", NS)[0].findtext("i:Class/i:Name", namespaces=NS), "Bleu")
+
     def test_category_for_age_and_sex(self):
         from datetime import date
         f = lambda y, s, year=2026: c.category_for(date(y, 6, 1), s, year)
@@ -76,7 +93,7 @@ class ConvertTests(unittest.TestCase):
     def test_missing_birth_or_sex_gives_no_class(self):
         headers, rows = c.read_rows(SAMPLE)
         rows[0]["Femme/Homme"] = ""
-        tree, report = c.build_tree(rows, c.map_columns(headers), "T", season_year=2026)
+        tree, report = c.build_tree(rows, c.map_columns(headers), "T", season_year=2026, mode="categorie")
         self.assertIsNone(tree.getroot().findall("i:PersonEntry", NS)[0].find("i:Class", NS))
         self.assertTrue(any("non calculable" in m for _, m in report.warnings))
 

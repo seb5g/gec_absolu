@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<EntryList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" createTime="2026-11-11T20:36:37" creator="csv_to_iof.py">
+<EntryList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" createTime="2026-11-11T20:49:06" creator="csv_to_iof.py">
   <Event>
     <Name>Absolu O MD 2026</Name>
   </Event>
@@ -21,7 +21,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">8401234</ControlCard>
     <Class>
-      <Name>D35</Name>
+      <Id>204</Id>
+      <Name>Violet Long</Name>
       <RaceClass>
         <Course>
           <Id>41724</Id>
@@ -48,7 +49,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">8402345</ControlCard>
     <Class>
-      <Name>H45</Name>
+      <Id>203</Id>
+      <Name>Violet Court</Name>
       <RaceClass>
         <Course>
           <Id>41725</Id>
@@ -74,7 +76,8 @@
       <Country code="FRA" />
     </Organisation>
     <Class>
-      <Name>D21</Name>
+      <Id>201</Id>
+      <Name>Jaune</Name>
       <RaceClass>
         <Course>
           <Id>41726</Id>
@@ -101,7 +104,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">7501987</ControlCard>
     <Class>
-      <Name>H16</Name>
+      <Id>200</Id>
+      <Name>Bleu</Name>
       <RaceClass>
         <Course>
           <Id>41727</Id>
@@ -127,7 +131,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">1311456</ControlCard>
     <Class>
-      <Name>D14</Name>
+      <Id>202</Id>
+      <Name>Vert</Name>
       <RaceClass>
         <Course>
           <Id>41728</Id>
@@ -154,7 +159,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">7503210</ControlCard>
     <Class>
-      <Name>H60</Name>
+      <Id>204</Id>
+      <Name>Violet Long</Name>
       <RaceClass>
         <Course>
           <Id>41724</Id>
@@ -174,7 +180,7 @@
       <Contact type="MobilePhoneNumber">06 66 77 88 99</Contact>
     </Person>
     <Class>
-      <Name>D10</Name>
+      <Name>Initiation</Name>
       <RaceClass>
         <Course>
           <Name>Initiation</Name>
@@ -194,7 +200,8 @@
     </Person>
     <ControlCard punchingSystem="SI">8405678</ControlCard>
     <Class>
-      <Name>H35</Name>
+      <Id>201</Id>
+      <Name>Jaune</Name>
       <RaceClass>
         <Course>
           <Id>41726</Id>
@@ -220,7 +227,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">7504321</ControlCard>
     <Class>
-      <Name>D21</Name>
+      <Id>200</Id>
+      <Name>Bleu</Name>
       <RaceClass>
         <Course>
           <Id>41727</Id>
@@ -247,7 +255,8 @@
     </Organisation>
     <ControlCard punchingSystem="SI">8406789</ControlCard>
     <Class>
-      <Name>H70</Name>
+      <Id>203</Id>
+      <Name>Violet Court</Name>
       <RaceClass>
         <Course>
           <Id>41725</Id>
