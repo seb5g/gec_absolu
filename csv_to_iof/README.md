@@ -7,6 +7,20 @@ le schéma officiel `IOF.xsd` (fourni ici, source : international-orienteering-f
 L'export FFCO est déjà au format IOF : il n'a pas besoin de ce script. MeOS
 accepte plusieurs imports successifs sans écrasement.
 
+## Préparer l'export correctement (à faire avant le premier usage)
+
+MeOS rapproche les catégories et les circuits par leur identifiant FFCO. Pour que ces identifiants soient exacts :
+
+1. Sur le site FFCO, prépare une inscription de test avec **au moins un licencié sur chacun des circuits** de
+   l'événement (un par circuit, y compris « Initiation » s'il existe) et exporte-la au format IOF XML 3.0
+   (fichier `inscriptions<N>.xml`).
+2. Passe ce fichier au script : `--class-ids inscriptions<N>.xml`. Il en reprend les identifiants de catégories et de
+   circuits de l'événement, qui complètent ou remplacent ceux intégrés au script.
+3. Les noms de circuit du formulaire HelloAsso doivent être identiques à ceux de l'export FFCO
+   (ex. « Violet Long », « Violet Court », « Jaune », « Bleu », « Vert »).
+
+Un circuit absent de cet export est écrit sans identifiant : MeOS créera alors une nouvelle catégorie.
+
 ## Utilisation
 
 ```
