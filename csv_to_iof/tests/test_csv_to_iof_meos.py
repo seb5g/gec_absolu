@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parent))
-import csv_to_iof as c  # noqa: E402
+import csv_to_iof_meos as c  # noqa: E402
 
 SAMPLE = HERE / "sample_helloasso.csv"
 NS = {"i": c.IOF_NS}

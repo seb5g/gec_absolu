@@ -2,9 +2,9 @@
 """Retraite un export FFCO d'inscriptions (IOF XML 3.0) pour MeOS.
 
 Usage :
-    python ffco_to_meos.py inscriptions39133.xml --category-in-name --year 2026
+    python ffco_to_iof_meos.py inscriptions39133.xml --category-in-name --year 2026
 
-Réutilise les fonctions de csv_to_iof.py (même dossier). Voir le README.
+Réutilise les fonctions de csv_to_iof_meos.py (même dossier). Voir le README.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from csv_to_iof import (IOF_NS, XSI_NS, MODES, Report, _norm, _q, _clean, builtin_class_ids, category_for,
+from csv_to_iof_meos import (IOF_NS, XSI_NS, MODES, Report, _norm, _q, _clean, builtin_class_ids, category_for,
                         load_class_ids, parse_birth, parse_sex, validate)
 
 ENTRY_ORDER = ["Id", "Person", "Organisation", "ControlCard", "Score", "Class", "RaceNumber", "AssignedFee",

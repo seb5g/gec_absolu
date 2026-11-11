@@ -1,4 +1,4 @@
-# csv_to_iof : export HelloAsso → IOF XML 3.0 pour MeOS
+# csv_to_iof_meos : export HelloAsso → IOF XML 3.0 pour MeOS
 
 Convertit l'export CSV des participants HelloAsso en `EntryList` IOF XML 3.0,
 importable dans MeOS (Événement → Importer des inscriptions) et validé contre
@@ -38,8 +38,8 @@ catégorie ou un nouveau circuit.
 ## Utilisation
 
 ```
-python csv_to_iof.py export.csv --event-name "Absolu O MD 2026" --class-ids inscriptions<N>.xml -o inscriptions.xml
-python csv_to_iof.py export.csv --event-name "Absolu O MD 2026" --mode categorie --year 2026 \
+python csv_to_iof_meos.py export.csv --event-name "Absolu O MD 2026" --class-ids inscriptions<N>.xml -o inscriptions.xml
+python csv_to_iof_meos.py export.csv --event-name "Absolu O MD 2026" --mode categorie --year 2026 \
     --class-ids inscriptions<N>.xml -o inscriptions.xml
 ```
 
@@ -51,13 +51,13 @@ Options : `--category-in-name` (ajoute la catégorie d'âge au prénom, « Auror
 tout circuit inconnu), `--clubs clubs.xml` et `--class-ids export_ffco.xml` (voir ci-dessous), `--no-builtin`,
 `--no-validate`.
 
-## Export FFCO : `ffco_to_meos.py`
+## Export FFCO : `ffco_to_iof_meos.py`
 
 Un second script retraite l'export FFCO d'inscriptions (IOF XML) avec les mêmes options de classe et de nom :
 
 ```
-python ffco_to_meos.py inscriptions39133.xml --category-in-name --year 2026
-python ffco_to_meos.py inscriptions39133.xml --mode categorie --year 2026 --class-ids inscriptions39133.xml
+python ffco_to_iof_meos.py inscriptions39133.xml --category-in-name --year 2026
+python ffco_to_iof_meos.py inscriptions39133.xml --mode categorie --year 2026 --class-ids inscriptions39133.xml
 ```
 
 Il écrit `<nom>_meos.xml` (option `-o`), qui est validé contre `IOF.xsd` :
@@ -69,7 +69,7 @@ Il écrit `<nom>_meos.xml` (option `-o`), qui est validé contre `IOF.xsd` :
   d'origine devient le parcours ;
 - `--event-name`, `--event-id` remplacent le nom et l'identifiant de l'événement (facultatif).
 
-Il réutilise les fonctions de `csv_to_iof.py` : garde les deux fichiers dans le même dossier.
+Il réutilise les fonctions de `csv_to_iof_meos.py` : garde les deux fichiers dans le même dossier.
 
 ## Colonnes HelloAsso utilisées
 

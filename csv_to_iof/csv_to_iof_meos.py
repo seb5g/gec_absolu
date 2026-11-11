@@ -2,7 +2,7 @@
 """Convertit un export CSV HelloAsso en IOF XML 3.0 (EntryList) pour MeOS.
 
 Usage :
-    python csv_to_iof.py export.csv --event-name "Mon événement" -o inscriptions.xml
+    python csv_to_iof_meos.py export.csv --event-name "Mon événement" -o inscriptions.xml
 
 Seule la bibliothèque standard est nécessaire. La validation contre le schéma
 officiel (IOF.xsd, fourni à côté du script) utilise lxml s'il est installé.
@@ -301,7 +301,7 @@ def build_tree(rows, cols, event_name, event_id=None, nationality="FRA",
     root = ET.Element(_q("EntryList"), {
         "iofVersion": "3.0",
         "createTime": (now or datetime.now()).replace(microsecond=0).isoformat(),
-        "creator": "csv_to_iof.py",
+        "creator": "csv_to_iof_meos.py",
     })
     event = ET.SubElement(root, _q("Event"))
     if event_id:

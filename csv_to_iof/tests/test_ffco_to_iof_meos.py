@@ -5,8 +5,8 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parent))
-import csv_to_iof as c  # noqa: E402
-import ffco_to_meos as f  # noqa: E402
+import csv_to_iof_meos as c  # noqa: E402
+import ffco_to_iof_meos as f  # noqa: E402
 
 NS = {"i": c.IOF_NS}
 FFCO = HERE / "sample_ffco.xml"
