@@ -7,30 +7,45 @@ le schéma officiel `IOF.xsd` (fourni ici, source : international-orienteering-f
 L'export FFCO est déjà au format IOF : il n'a pas besoin de ce script. MeOS
 accepte plusieurs imports successifs sans écrasement.
 
+## Principe : catégorie calculée, circuit libre
+
+- La **classe MeOS** (catégorie) est **calculée** par le script d'après le sexe et l'âge au 31 décembre de
+  l'année de l'événement : D/H 10 (≤ 10 ans), 12 (11-12), 14, 16, 18, 20 (19-20), 21 (21-34), 35 (35-39),
+  40, 45, 50, 55, 60, 65, 70, 75 (75-79), 80 (≥ 80).
+- Le **circuit** (parcours MeOS) est le choix libre du coureur dans le formulaire HelloAsso, quel que soit son âge.
+- Pas de champ « catégorie » dans HelloAsso : il faut seulement la date de naissance, le sexe et le circuit.
+
 ## Préparer l'export correctement (à faire avant le premier usage)
 
 MeOS rapproche les catégories et les circuits par leur identifiant FFCO. Pour que ces identifiants soient exacts :
 
 1. Sur le site FFCO, prépare une inscription de test avec **au moins un licencié sur chacun des circuits** de
-   l'événement (un par circuit, y compris « Initiation » s'il existe) et exporte-la au format IOF XML 3.0
-   (fichier `inscriptions<N>.xml`).
+   l'événement et **dans chacune des catégories d'âge et de sexe** (D10 à D80, H10 à H80, y compris « Initiation »
+   s'il existe), puis exporte-la au format IOF XML 3.0 (fichier `inscriptions<N>.xml`). Le fichier de catégories FFCO
+   (CSV `Nr catg.` / `Catg. Court`) donne aussi les identifiants de catégories.
 2. Passe ce fichier au script : `--class-ids inscriptions<N>.xml`. Il en reprend les identifiants de catégories et de
    circuits de l'événement, qui complètent ou remplacent ceux intégrés au script.
 3. Les noms de circuit du formulaire HelloAsso doivent être identiques à ceux de l'export FFCO
-   (ex. « Violet Long », « Violet Court », « Jaune », « Bleu », « Vert »).
+   (ex. « Violet Long », « Violet Court », « Jaune », « Bleu », « Vert »), et les catégories s'appeler « D14 »,
+   « H21 », etc., comme dans l'export FFCO.
 
-Un circuit absent de cet export est écrit sans identifiant : MeOS créera alors une nouvelle catégorie.
+Une catégorie ou un circuit absent de cet export est écrit sans identifiant : MeOS créera alors une nouvelle
+catégorie ou un nouveau circuit.
 
 ## Utilisation
 
 ```
-python csv_to_iof.py export.csv --event-name "Absolu O MD 2026" -o inscriptions.xml
+python csv_to_iof.py export.csv --event-name "Absolu O MD 2026" --year 2026 \
+    --class-ids inscriptions<N>.xml -o inscriptions.xml
 ```
 
 Python 3.9+ ; la conversion n'utilise que la bibliothèque standard. La validation
 XSD (automatique) demande `pip install lxml` ; sans lxml elle est ignorée avec un message.
-Options : `--event-id`, `--nationality` (défaut `FRA`), `--class-map classes.json`
-(`{"Violet": "Violet Long"}` pour renommer un circuit en classe MeOS), `--classes "Violet Long;Violet Court;Jaune;Bleu;Vert;Initiation"` (normalise la casse et signale tout circuit inconnu), `--clubs clubs.xml` et `--class-ids export_ffco.xml` (voir ci-dessous), `--no-validate`.
+Options : `--year` (année de l'événement pour l'âge, défaut : année en cours), `--event-id`,
+`--nationality` (défaut `FRA`), `--class-map circuits.json` (`{"Violet": "Violet Long"}` pour renommer un circuit),
+`--classes "Violet Long;Violet Court;Jaune;Bleu;Vert;Initiation"` (liste des circuits : normalise la casse et signale
+tout circuit inconnu), `--clubs clubs.xml` et `--class-ids export_ffco.xml` (voir ci-dessous), `--no-builtin`,
+`--no-validate`.
 
 ## Colonnes HelloAsso utilisées
 
@@ -40,9 +55,8 @@ Les colonnes sont repérées par mots-clés dans l'en-tête (accents et casse ig
 | --- | --- | --- |
 | Statut | « statut » + « commande » | seules les commandes « Validé » sont converties |
 | Nom / Prénom | « nom participant » / « prénom participant » | `Person/Name/Family`, `Given` (obligatoires) |
-| Circuit | « circuit » | `Class/Name` (catégorie) et `Class/RaceClass/Course/Name` (circuit, comme l'export FFCO) : texte avant la première parenthèse (« Bleu ( 2,5 km … ) » → « Bleu ») |
-| Naissance | « naissance » (JJ/MM/AAAA) | `Person/BirthDate` |
-| Sexe | « Femme/Homme » ou « sexe » | `Person/@sex` (F ou M) |
+| Naissance + sexe | « naissance » (JJ/MM/AAAA) ; « Femme/Homme » ou « sexe » | `Person/BirthDate`, `Person/@sex` (F ou M) et la catégorie `Class/Name` (D14, H21...) calculée. Sans l'un des deux : pas de classe, signalé |
+| Circuit | « circuit » | `Class/RaceClass/Course/Name` : texte avant la première parenthèse (« Bleu ( 2,5 km … ) » → « Bleu ») |
 | Club | « club » | `Organisation` (Id, Name, ShortName, Country) ; club vide ou « Sans club » : aucun `Organisation` dans le XML |
 | Puce | « puce » + « numéro » | `ControlCard` (`punchingSystem="SI"`), chiffres seulement |
 | Prêt de puce | « prêt » + « puce » | uniquement pour détecter une incohérence |
@@ -50,7 +64,7 @@ Les colonnes sont repérées par mots-clés dans l'en-tête (accents et casse ig
 | Licence (facultative) | « licence » | `Person/Id type="FFCO"` |
 
 Le script affiche un rapport : lignes ignorées (commande non validée, nom manquant),
-coureurs sans puce, dates ou sexes illisibles.
+coureurs sans puce, catégories sans identifiant, dates ou sexes illisibles.
 
 ## Clubs : fournir la liste officielle
 
@@ -69,21 +83,20 @@ Sans option, le script utilise :
   FFCO, son nom officiel, son sigle et son pays. Les noms partagés par plusieurs clubs (« INDIVIDUEL », un par
   département) sont ambigus et ne sont pas rapprochés. Deux alias relevés dans les exports FFCO (« ABSOLU RAID »,
   « CENT VALLEES ORIENTATION 12 ») complètent la liste ;
-- les **catégories** (Bleu 200, Jaune 201, Vert 202, Violet Court 203, Violet Long 204) et les **circuits** de
-  l'événement 107534 (41724 à 41728), constantes `BUILTIN_*` en tête du script.
+- les **circuits** de l'événement 107534 (identifiants 41724 à 41728), constantes `BUILTIN_*` en tête du script.
+  Aucun identifiant de catégorie d'âge n'est intégré : il vient de `--class-ids`.
 
 `--clubs` et `--class-ids` complètent ou remplacent ces valeurs, `--no-builtin` les désactive. Les identifiants de
 circuit sont probablement propres à l'événement : pour un autre événement, passe un export FFCO de cet événement
-avec `--class-ids`. « Initiation » n'a pas d'identifiant connu.
+avec `--class-ids`.
 
 ## Identifiants de catégories et de circuits
 
 MeOS crée une nouvelle catégorie si son identifiant diffère de celui de l'export FFCO. Avec
-`--class-ids export_ffco.xml` (un export FFCO d'inscriptions contenant toutes tes catégories), le script
-écrit `Class/Id` et `Class/RaceClass/Course/Id` repris de ce fichier, en rapprochant par nom. Le fichier de catégories FFCO (CSV `Nr catg.` / `Catg. Court`, ex. `categories39132.csv`) est aussi accepté : il
-donne les identifiants de catégories (pas ceux des circuits). Une catégorie
-absente du fichier est écrite sans identifiant et signalée. Mets donc dans l'export FFCO de référence au
-moins un inscrit par catégorie.
+`--class-ids`, le script écrit `Class/Id` (catégorie) et `Class/RaceClass/Course/Id` (circuit) repris d'un export FFCO
+d'inscriptions, en rapprochant par nom. Le fichier de catégories FFCO (CSV `Nr catg.` / `Catg. Court`, ex.
+`categories39132.csv`) est aussi accepté : il donne les identifiants de catégories (pas ceux des circuits). Une
+catégorie absente du fichier est écrite sans identifiant et listée une fois dans le rapport.
 
 ## Tests
 
@@ -95,6 +108,7 @@ Les tests de schéma sont ignorés si lxml est absent.
 
 ## Limites connues
 
-- Pas d'identifiants de classe ni de club : MeOS rattache par nom (à confirmer par un import test).
+- Pas de surclassement : la catégorie est toujours celle de l'âge et du sexe.
+- Sans `--class-ids`, les catégories sont écrites sans identifiant : MeOS rattache par nom (à confirmer par un import test).
 - Une seule course, inscriptions individuelles (pas d'équipes ni de relais).
-- Le sexe est lu tel que saisi dans le formulaire.
+- Le sexe est lu tel que saisi dans le formulaire (« Femme » / « Homme »).
