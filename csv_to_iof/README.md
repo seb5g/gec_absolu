@@ -45,7 +45,7 @@ python csv_to_iof.py export.csv --event-name "Absolu O MD 2026" --mode categorie
 
 Python 3.9+ ; la conversion n'utilise que la bibliothèque standard. La validation
 XSD (automatique) demande `pip install lxml` ; sans lxml elle est ignorée avec un message.
-Options : `--mode` (`couleur` par défaut, ou `categorie`), `--year` (année de l'événement pour l'âge en mode `categorie`, défaut : année en cours), `--event-id`,
+Options : `--category-in-name` (ajoute la catégorie d'âge au prénom, « Aurore (D40) » : elle apparaît dans toutes les listes MeOS, ex. un classement par circuit ; calculée avec `--year` d'après la naissance et le sexe), `--mode` (`couleur` par défaut, ou `categorie`), `--year` (année de l'événement pour l'âge en mode `categorie`, défaut : année en cours), `--event-id`,
 `--nationality` (défaut `FRA`), `--class-map circuits.json` (`{"Violet": "Violet Long"}` pour renommer un circuit),
 `--classes "Violet Long;Violet Court;Jaune;Bleu;Vert;Initiation"` (liste des circuits : normalise la casse et signale
 tout circuit inconnu), `--clubs clubs.xml` et `--class-ids export_ffco.xml` (voir ci-dessous), `--no-builtin`,

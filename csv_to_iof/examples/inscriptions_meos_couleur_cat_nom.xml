@@ -1,0 +1,268 @@
+<?xml version='1.0' encoding='utf-8'?>
+<EntryList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" createTime="2026-11-11T21:27:31" creator="csv_to_iof.py">
+  <Event>
+    <Name>Absolu O MD 2026</Name>
+  </Event>
+  <PersonEntry>
+    <Person sex="F">
+      <Name>
+        <Family>Garcia</Family>
+        <Given>Camille (D35)</Given>
+      </Name>
+      <BirthDate>1991-03-14</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">06 11 22 33 44</Contact>
+    </Person>
+    <Organisation>
+      <Id>8105</Id>
+      <Name>BOA Albi</Name>
+      <ShortName>8105OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">8401234</ControlCard>
+    <Class>
+      <Id>204</Id>
+      <Name>Violet Long</Name>
+      <RaceClass>
+        <Course>
+          <Id>41724</Id>
+          <Name>Violet Long</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="M">
+      <Name>
+        <Family>Bernard</Family>
+        <Given>Thomas (H45)</Given>
+      </Name>
+      <BirthDate>1978-09-02</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">07 22 33 44 55</Contact>
+    </Person>
+    <Organisation>
+      <Id>1202</Id>
+      <Name>CVO12</Name>
+      <ShortName>1202OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">8402345</ControlCard>
+    <Class>
+      <Id>203</Id>
+      <Name>Violet Court</Name>
+      <RaceClass>
+        <Course>
+          <Id>41725</Id>
+          <Name>Violet Court</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="F">
+      <Name>
+        <Family>Petit</Family>
+        <Given>Julie (D21)</Given>
+      </Name>
+      <BirthDate>2001-07-25</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">06 33 44 55 66</Contact>
+    </Person>
+    <Organisation>
+      <Id>3108</Id>
+      <Name>Absolu'O</Name>
+      <ShortName>3108OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <Class>
+      <Id>201</Id>
+      <Name>Jaune</Name>
+      <RaceClass>
+        <Course>
+          <Id>41726</Id>
+          <Name>Jaune</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="M">
+      <Name>
+        <Family>Roux</Family>
+        <Given>Hugo (H16)</Given>
+      </Name>
+      <BirthDate>2010-05-11</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">06 44 55 66 77</Contact>
+    </Person>
+    <Organisation>
+      <Id>3410</Id>
+      <Name>MUC Orientation</Name>
+      <ShortName>3410OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">7501987</ControlCard>
+    <Class>
+      <Id>200</Id>
+      <Name>Bleu</Name>
+      <RaceClass>
+        <Course>
+          <Id>41727</Id>
+          <Name>Bleu</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="F">
+      <Name>
+        <Family>Fournier</Family>
+        <Given>Léa (D14)</Given>
+      </Name>
+      <BirthDate>2013-11-30</BirthDate>
+      <Nationality code="FRA" />
+    </Person>
+    <Organisation>
+      <Id>3105</Id>
+      <Name>TOAC Orientatio</Name>
+      <ShortName>3105OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">1311456</ControlCard>
+    <Class>
+      <Id>202</Id>
+      <Name>Vert</Name>
+      <RaceClass>
+        <Course>
+          <Id>41728</Id>
+          <Name>Vert</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="M">
+      <Name>
+        <Family>Moreau</Family>
+        <Given>Nicolas (H60)</Given>
+      </Name>
+      <BirthDate>1965-01-19</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">07 55 66 77 88</Contact>
+    </Person>
+    <Organisation>
+      <Id>8203</Id>
+      <Name>SCOR</Name>
+      <ShortName>8203OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">7503210</ControlCard>
+    <Class>
+      <Id>204</Id>
+      <Name>Violet Long</Name>
+      <RaceClass>
+        <Course>
+          <Id>41724</Id>
+          <Name>Violet Long</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="F">
+      <Name>
+        <Family>Lambert</Family>
+        <Given>Chloé (D10)</Given>
+      </Name>
+      <BirthDate>2017-06-08</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">06 66 77 88 99</Contact>
+    </Person>
+    <Class>
+      <Name>Initiation</Name>
+      <RaceClass>
+        <Course>
+          <Name>Initiation</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="M">
+      <Name>
+        <Family>Girard</Family>
+        <Given>Antoine (H35)</Given>
+      </Name>
+      <BirthDate>1988-12-23</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">06 77 88 99 00</Contact>
+    </Person>
+    <ControlCard punchingSystem="SI">8405678</ControlCard>
+    <Class>
+      <Id>201</Id>
+      <Name>Jaune</Name>
+      <RaceClass>
+        <Course>
+          <Id>41726</Id>
+          <Name>Jaune</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="F">
+      <Name>
+        <Family>Faure</Family>
+        <Given>Manon (D21)</Given>
+      </Name>
+      <BirthDate>1995-04-17</BirthDate>
+      <Nationality code="FRA" />
+    </Person>
+    <Organisation>
+      <Id>3408</Id>
+      <Name>AMSO34</Name>
+      <ShortName>3408OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">7504321</ControlCard>
+    <Class>
+      <Id>200</Id>
+      <Name>Bleu</Name>
+      <RaceClass>
+        <Course>
+          <Id>41727</Id>
+          <Name>Bleu</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="M">
+      <Name>
+        <Family>Andre</Family>
+        <Given>Paul (H70)</Given>
+      </Name>
+      <BirthDate>1952-10-05</BirthDate>
+      <Nationality code="FRA" />
+      <Contact type="MobilePhoneNumber">06 88 99 00 11</Contact>
+    </Person>
+    <Organisation>
+      <Id>8106</Id>
+      <Name>Albi RESSORT</Name>
+      <ShortName>8106OC</ShortName>
+      <Country code="FRA" />
+    </Organisation>
+    <ControlCard punchingSystem="SI">8406789</ControlCard>
+    <Class>
+      <Id>203</Id>
+      <Name>Violet Court</Name>
+      <RaceClass>
+        <Course>
+          <Id>41725</Id>
+          <Name>Violet Court</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+</EntryList>

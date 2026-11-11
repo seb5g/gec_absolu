@@ -291,7 +291,8 @@ def match_club(name: str, clubs: dict[str, dict]) -> tuple[Optional[dict], bool]
 
 
 def build_tree(rows, cols, event_name, event_id=None, nationality="FRA",
-               class_map=None, known_classes=None, clubs=None, class_ids=None, season_year=None, mode="couleur", now=None) -> tuple[ET.ElementTree, Report]:
+               class_map=None, known_classes=None, clubs=None, class_ids=None, season_year=None, mode="couleur",
+               category_in_name=False, now=None) -> tuple[ET.ElementTree, Report]:
     class_map = class_map or {}
     season_year = season_year or date.today().year
     report = Report()
@@ -333,11 +334,18 @@ def build_tree(rows, cols, event_name, event_id=None, nationality="FRA",
         licence = get(row, "licence")
         if licence:
             ET.SubElement(person, _q("Id"), {"type": "FFCO"}).text = licence
-        name = ET.SubElement(person, _q("Name"))
-        ET.SubElement(name, _q("Family")).text = family
-        ET.SubElement(name, _q("Given")).text = given
         birth_raw = get(row, "birth")
         birth = parse_birth(birth_raw) if birth_raw else None
+        name = ET.SubElement(person, _q("Name"))
+        ET.SubElement(name, _q("Family")).text = family
+        given_xml = given
+        if category_in_name:
+            # La catégorie d'âge apparaît dans les listes MeOS à la suite du prénom : « Aurore (D40) ».
+            if birth and sex:
+                given_xml = f"{given} ({category_for(birth, sex, season_year)})"
+            else:
+                report.warnings.append((lineno, f"{label} : catégorie d'âge non calculable, nom sans catégorie"))
+        ET.SubElement(name, _q("Given")).text = given_xml
         if birth:
             ET.SubElement(person, _q("BirthDate")).text = birth.isoformat()
         elif birth_raw:
@@ -451,6 +459,8 @@ def main(argv=None) -> int:
     p.add_argument("--mode", choices=MODES, default="couleur",
                    help="couleur (défaut) : la classe MeOS est le circuit ; categorie : la classe est la catégorie "
                         "d'âge/sexe calculée (D14, H21...) et le circuit devient le parcours")
+    p.add_argument("--category-in-name", action="store_true",
+                   help="ajoute la catégorie d'âge au prénom (« Aurore (D40) ») pour qu'elle apparaisse dans les listes MeOS")
     p.add_argument("--year", type=int, default=date.today().year,
                    help="année de l'événement (mode categorie) : l'âge est calculé au 31 décembre de cette année (défaut : année en cours)")
     p.add_argument("--no-builtin", action="store_true",
@@ -471,7 +481,7 @@ def main(argv=None) -> int:
     tree, report = build_tree(rows, cols, args.event_name, args.event_id,
                               args.nationality, class_map,
                               [c for c in (args.classes or "").split(";") if c.strip()],
-                              clubs, class_ids, args.year, args.mode)
+                              clubs, class_ids, args.year, args.mode, args.category_in_name)
     out = args.output or args.csv.with_suffix(".xml")
     tree.write(out, encoding="utf-8", xml_declaration=True)
     print(report.render())

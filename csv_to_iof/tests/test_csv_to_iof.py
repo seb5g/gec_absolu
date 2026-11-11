@@ -77,6 +77,14 @@ class ConvertTests(unittest.TestCase):
         tree, _ = c.build_tree(rows, c.map_columns(headers), "T", mode="couleur")
         self.assertEqual(tree.getroot().findall("i:PersonEntry", NS)[0].findtext("i:Class/i:Name", namespaces=NS), "Bleu")
 
+    def test_category_in_name(self):
+        tree, _ = convert(mode="couleur", category_in_name=True)
+        es = tree.getroot().findall("i:PersonEntry", NS)
+        self.assertEqual(es[0].findtext("i:Person/i:Name/i:Given", namespaces=NS), "Léa (D12)")
+        self.assertEqual(es[0].findtext("i:Class/i:Name", namespaces=NS), "Bleu")  # classement par circuit inchangé
+        tree, _ = convert(mode="couleur")
+        self.assertEqual(tree.getroot().findall("i:PersonEntry", NS)[0].findtext("i:Person/i:Name/i:Given", namespaces=NS), "Léa")
+
     def test_category_for_age_and_sex(self):
         from datetime import date
         f = lambda y, s, year=2026: c.category_for(date(y, 6, 1), s, year)
