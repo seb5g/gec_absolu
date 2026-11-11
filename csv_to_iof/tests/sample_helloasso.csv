@@ -1,0 +1,5 @@
+Référence commande;Date de la commande;Statut de la commande;Nom participant;Prénom participant;Nom payeur;Prénom payeur;Email payeur;Raison sociale;Moyen de paiement;Billet;Numéro de billet;Tarif;Montant tarif;Code Promo;Montant code promo;Date  de Naissance;Club de CO (pour les licenciés ffco);SI vous en avez une, Numero de puce électronique Sport Ident;Circuit;"J'ai répondu ""non"" à toutes les questions du Questionnaire Santé (Obligatoire pour etre chronométré)";Femme/Homme;Prêt de puce électronique;Téléphone portable (pour vous joindre le jour J)
+1;11/11/2026 11:10;Validé;DUPONT;Léa;Dupont;Marc;payeur@example.org;;;;1001;Jeunes;0,00;;;30/03/2015;ABSOLU RAID;;Bleu ( 2,5 km - Niveau Technique débutant - Balises sur les chemins);Oui;Femme;Oui;06 12 34 56 78
+2;11/11/2026 11:12;Validé;MARTIN;Paul;Martin;Anne;payeur2@example.org;;;;1002;Adultes;8,00;;;28/12/1980;;34566323;Violet (7,5 km - Niveau Technique élevé);Oui;Homme;Non;
+3;11/11/2026 11:15;En attente;DURAND;Jo;Durand;Jo;payeur3@example.org;;;;1003;Adultes;8,00;;;01/01/1990;Absolu;1234567;Bleu ( 2,5 km );Oui;Homme;Non;07.00.00.00.00
+4;;;;;;;;;;;;;;;;;;;;;;;
