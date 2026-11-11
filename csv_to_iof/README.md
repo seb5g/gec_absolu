@@ -51,6 +51,26 @@ Options : `--category-in-name` (ajoute la catégorie d'âge au prénom, « Auror
 tout circuit inconnu), `--clubs clubs.xml` et `--class-ids export_ffco.xml` (voir ci-dessous), `--no-builtin`,
 `--no-validate`.
 
+## Export FFCO : `ffco_to_meos.py`
+
+Un second script retraite l'export FFCO d'inscriptions (IOF XML) avec les mêmes options de classe et de nom :
+
+```
+python ffco_to_meos.py inscriptions39133.xml --category-in-name --year 2026
+python ffco_to_meos.py inscriptions39133.xml --mode categorie --year 2026 --class-ids inscriptions39133.xml
+```
+
+Il écrit `<nom>_meos.xml` (option `-o`), qui est validé contre `IOF.xsd` :
+- remet les éléments de chaque inscription dans l'ordre du schéma (l'export FFCO brut n'y est pas conforme),
+  et ajoute `punchingSystem="SI"` à la puce ;
+- `--category-in-name` : ajoute la catégorie d'âge au prénom, « Aurore (D40) » ;
+- `--mode couleur` (défaut) : la classe reste celle de l'export (le circuit) ;
+  `--mode categorie` : la classe devient la catégorie D/H calculée (identifiants via `--class-ids`) et la classe
+  d'origine devient le parcours ;
+- `--event-name`, `--event-id` remplacent le nom et l'identifiant de l'événement (facultatif).
+
+Il réutilise les fonctions de `csv_to_iof.py` : garde les deux fichiers dans le même dossier.
+
 ## Colonnes HelloAsso utilisées
 
 Les colonnes sont repérées par mots-clés dans l'en-tête (accents et casse ignorés), pas par position.

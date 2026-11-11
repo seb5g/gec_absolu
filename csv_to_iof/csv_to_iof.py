@@ -85,7 +85,7 @@ class Report:
                          + ", ".join(sorted(self.missing_class_ids)))
         if self.warnings:
             lines.append("Avertissements :")
-            lines += [f"  - ligne {n} : {msg}" for n, msg in self.warnings]
+            lines += [f"  - ligne {n} : {msg}" if n else f"  - {msg}" for n, msg in self.warnings]
         return "\n".join(lines)
 
 

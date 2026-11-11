@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<EntryList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" createTime="2026-11-11T08:00:00" creator="https://licences.ffcorientation.fr">
+  <Event>
+    <Id>1</Id>
+    <Name>Exemple FFCO</Name>
+  </Event>
+  <PersonEntry>
+    <Person sex="F">
+      <Id>1001</Id>
+      <Name>
+        <Family>DUPONT</Family>
+        <Given>Camille (D35)</Given>
+      </Name>
+      <BirthDate>1991-03-14</BirthDate>
+      <Nationality code="FRA">France</Nationality>
+    </Person>
+    <Organisation>
+      <Id>3108</Id>
+      <Name>Absolu'O</Name>
+      <ShortName>3108OC</ShortName>
+      <Country code="FRA">France</Country>
+    </Organisation>
+    <ControlCard punchingSystem="SI">1234567</ControlCard>
+    <Class>
+      <Id>204</Id>
+      <Name>Violet Long</Name>
+      <RaceClass>
+        <Course>
+          <Id>41724</Id>
+          <Name>Violet Long</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+  <PersonEntry>
+    <Person sex="M">
+      <Id>1002</Id>
+      <Name>
+        <Family>MARTIN</Family>
+        <Given>Paul (H16)</Given>
+      </Name>
+      <BirthDate>2010-05-11</BirthDate>
+      <Nationality code="FRA">France</Nationality>
+    </Person>
+    <Organisation>
+      <Id>1202</Id>
+      <Name>CVO12</Name>
+      <ShortName>1202OC</ShortName>
+      <Country code="FRA">France</Country>
+    </Organisation>
+    <ControlCard punchingSystem="SI">7654321</ControlCard>
+    <Class>
+      <Id>200</Id>
+      <Name>Bleu</Name>
+      <RaceClass>
+        <Course>
+          <Id>41727</Id>
+          <Name>Bleu</Name>
+        </Course>
+      </RaceClass>
+    </Class>
+  </PersonEntry>
+</EntryList>
